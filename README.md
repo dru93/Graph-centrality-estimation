@@ -1,2 +1,2 @@
 # Graph-centrality-estimation
-for graph closeness and betweenness centrality measures
+for closeness and betweenness centrality measures

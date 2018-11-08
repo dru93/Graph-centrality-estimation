@@ -22,13 +22,13 @@ elapsedBetweenness = end - start
 
 # random pivot selection
 def randomPivots(G, numberOfPivots):
-        nodes = list(G.nodes.keys())
-        pivots = []
-        for _ in range(numberOfPivots):
-                pivotIndexToInput = random.randint(0, len(nodes) - 1)
-                pivots.append(nodes[pivotIndexToInput])
-                nodes.remove(nodes[pivotIndexToInput])
-        return pivots
+    nodes = list(G.nodes.keys())
+    pivots = []
+    for _ in range(numberOfPivots):
+        pivotIndexToInput = random.randint(0, len(nodes) - 1)
+        pivots.append(nodes[pivotIndexToInput])
+        nodes.remove(nodes[pivotIndexToInput])
+    return pivots
 
 numberOfPivots = 100
 pivots = randomPivots(G, numberOfPivots)
@@ -38,13 +38,13 @@ start = time.time()
 nodeCloseness = []
 
 for n in G:
-        distances = []
-        for pivot in pivots:
-                path = nx.shortest_path(G, source = n, target = pivot)
-                pathLength = len(path)
-                distances.append(pathLength)
-        temp = numberOfPivots/sum(distances)
-        nodeCloseness.append(temp)
+    distances = []
+    for pivot in pivots:
+        path = nx.shortest_path(G, source = n, target = pivot)
+        pathLength = len(path)
+        distances.append(pathLength)
+    temp = numberOfPivots/sum(distances)
+    nodeCloseness.append(temp)
 
 averageClosenessApprox = statistics.mean(nodeCloseness)
 end = time.time()
@@ -56,28 +56,28 @@ elapsedClosenessApprox = end - start
 
 
 def _single_source_shortest_path_basic(G, s):
-        S = []
-        P = {}
-        for v in G:
-                P[v] = []
-        sigma = dict.fromkeys(G, 0.0)    # sigma[v]=0 for v in G
-        D = {}
-        sigma[s] = 1.0
-        D[s] = 0
-        Q = [s]
-        while Q:   # use BFS to find shortest paths
-                v = Q.pop(0)
-                S.append(v)
-                Dv = D[v]
-                sigmav = sigma[v]
-                for w in G[v]:
-                        if w not in D:
-                                Q.append(w)
-                                D[w] = Dv + 1
-                        if D[w] == Dv + 1:   # this is a shortest path, count paths
-                                sigma[w] += sigmav
-                                P[w].append(v)  # predecessors
-        return S, P, sigma
+    S = []
+    P = {}
+    for v in G:
+        P[v] = []
+    sigma = dict.fromkeys(G, 0.0)    # sigma[v]=0 for v in G
+    D = {}
+    sigma[s] = 1.0
+    D[s] = 0
+    Q = [s]
+    while Q:   # use BFS to find shortest paths
+        v = Q.pop(0)
+        S.append(v)
+        Dv = D[v]
+        sigmav = sigma[v]
+        for w in G[v]:
+            if w not in D:
+                Q.append(w)
+                D[w] = Dv + 1
+            if D[w] == Dv + 1:   # this is a shortest path, count paths
+                sigma[w] += sigmav
+                P[w].append(v)  # predecessors
+    return S, P, sigma
 
 def _accumulate_endpoints(betweenness, S, P, sigma, s):
     betweenness[s] += len(S) - 1
@@ -121,10 +121,10 @@ start = time.time()
 betweenness = dict.fromkeys(G, 0.0)  # b[v]=0 for v in G
 nodes = pivots
 for s in nodes:
-        S, P, sigma = _single_source_shortest_path_basic(G, s)
-        betweenness = _accumulate_endpoints(betweenness, S, P, sigma, s)
-        betweenness = _rescale(betweenness, len(G), normalized=True,
-                           directed=False, k=None, endpoints=False)
+    S, P, sigma = _single_source_shortest_path_basic(G, s)
+    betweenness = _accumulate_endpoints(betweenness, S, P, sigma, s)
+    betweenness = _rescale(betweenness, len(G), normalized=True,
+                        directed=False, k=None, endpoints=False)
 
 averageBetweennessApprox = statistics.mean(betweenness.values())
 end = time.time()

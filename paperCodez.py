@@ -1,22 +1,47 @@
 import time
 import random
 import statistics
+import numpy as np
 import networkx as nx
 
 # create a random Erdős-Rényi graph with 1000 nodes and probability for edge creation 0.5
 G = nx.fast_gnp_random_graph(1000, 0.5, seed = 1, directed = False)
 
 # random pivot selection
+
 def randomPivots(G, numberOfPivots):
     nodes = list(G.nodes.keys())
-    pivots = []
-    for _ in range(numberOfPivots):
-        pivotIndexToInput = random.randint(0, len(nodes) - 1)
-        pivots.append(nodes[pivotIndexToInput])
-        nodes.remove(nodes[pivotIndexToInput])
+    pivots = random.sample(nodes,numberOfPivots)
     return pivots
 
-numberOfPivots = 100
+def degreePivots(G, numberOfPivots):
+    degrees = list(G.degree())
+    degreesVal = [x[1] for x in degrees]
+
+    breakpoint1 = int(np.percentile(degreesVal,25))
+    breakpoint2 = int(np.percentile(degreesVal,50))
+    breakpoint3 = int(np.percentile(degreesVal,75))
+
+    group1 = [i for i in degrees if i[1] <= breakpoint1]
+    group2 = [i for i in degrees if i[1] > breakpoint1 and i <= breakpoint2]
+    group3 = [i for i in degrees if i[1] > breakpoint2 and i <= breakpoint3]
+    group4 = [i for i in degrees if i[1] > breakpoint3]
+
+    nOfSamplesGroup1 = round(len(group1) * numberOfPivots/len(G), 0)
+    nOfSamplesGroup2 = round(len(group2) * numberOfPivots/len(G), 0)
+    nOfSamplesGroup3 = round(len(group3) * numberOfPivots/len(G), 0)
+    nOfSamplesGroup4 = round(len(group4) * numberOfPivots/len(G), 0)
+
+    pivots1 = random.sample([x[0] for x in group1], int(nOfSamplesGroup1))
+    pivots2 = random.sample([x[0] for x in group2], int(nOfSamplesGroup2))
+    pivots3 = random.sample([x[0] for x in group3], int(nOfSamplesGroup3))
+    pivots4 = random.sample([x[0] for x in group4], int(nOfSamplesGroup4))
+    allPivotDegrees = pivots1 + pivots2 + pivots3 + pivots4
+    return allPivotDegrees
+
+
+    
+numberOfPivots = 1000
 pivots = randomPivots(G, numberOfPivots)
 
 # exact closeness centrality
@@ -131,6 +156,8 @@ averageBetweennessApprox = statistics.mean(betweennessApproxNodeValues.values())
 end = time.time()
 elapsedBetweennessApprox = end - start
 
+print('\nNumber of pivots:', numberOfPivots)
+
 print('\n\t~~~ Time tracks ~~~')
 print('Betweenness centrality:\t\t\t', round(elapsedBetweenness,2), 's')
 print('Betweenness centrality approximation:\t', round(elapsedBetweennessApprox,2), 's')
@@ -142,3 +169,8 @@ print('Betweenness centrality:\t\t\t', round(averageBetweenness,6))
 print('Betweenness centrality approximation:\t', round(averageBetweennessApprox,6))
 print('Closeness centrality:\t\t\t', round(averageCloseness,6))
 print('Closeness centrality approximation:\t', round(averageClosenessApprox,6))
+
+# counter = 0
+# for i in range (0, len(degrees)-1):
+#     if degrees[i] >= statistics.mean(degrees):
+#         counter += 1

@@ -23,8 +23,8 @@ def degreePivots(G, numberOfPivots):
     breakpoint3 = int(np.percentile(degreesVal,75))
 
     group1 = [i for i in degrees if i[1] <= breakpoint1]
-    group2 = [i for i in degrees if i[1] > breakpoint1 and i <= breakpoint2]
-    group3 = [i for i in degrees if i[1] > breakpoint2 and i <= breakpoint3]
+    group2 = [i for i in degrees if i[1] > breakpoint1 and i[1] <= breakpoint2]
+    group3 = [i for i in degrees if i[1] > breakpoint2 and i[1] <= breakpoint3]
     group4 = [i for i in degrees if i[1] > breakpoint3]
 
     nOfSamplesGroup1 = round(len(group1) * numberOfPivots/len(G), 0)
@@ -38,11 +38,9 @@ def degreePivots(G, numberOfPivots):
     pivots4 = random.sample([x[0] for x in group4], int(nOfSamplesGroup4))
     allPivotDegrees = pivots1 + pivots2 + pivots3 + pivots4
     return allPivotDegrees
-
-
     
-numberOfPivots = 1000
-pivots = randomPivots(G, numberOfPivots)
+numberOfPivots = int(len(G)/10)
+pivots = degreePivots(G, numberOfPivots)
 
 # exact closeness centrality
 start = time.time()
@@ -170,7 +168,9 @@ print('Betweenness centrality approximation:\t', round(averageBetweennessApprox,
 print('Closeness centrality:\t\t\t', round(averageCloseness,6))
 print('Closeness centrality approximation:\t', round(averageClosenessApprox,6))
 
-# counter = 0
-# for i in range (0, len(degrees)-1):
-#     if degrees[i] >= statistics.mean(degrees):
-#         counter += 1
+# TO DO
+# maxmin pivots
+# maxsum pivots
+# minsum pivots
+# mixed pivots
+# random proportional to pagerank pivots

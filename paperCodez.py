@@ -5,15 +5,6 @@ import statistics
 import numpy as np
 import networkx as nx
 
-numberOfNodes = 200
-
-# create a random Erdős-Rényi graph with probability for edge creation = 0.5
-G = nx.fast_gnp_random_graph(numberOfNodes, 0.5, seed = 2, directed = False)
-
-numberOfPivots1 = int(len(G)/10)
-numberOfPivots2 = int(len(G)/10/2)
-numberOfPivots3 = int(len(G)/100)
-
 # random pivot selection
 def randomPivots(G, numberOfPivots):
     nodes = list(G.nodes)
@@ -21,7 +12,7 @@ def randomPivots(G, numberOfPivots):
     return pivots
 
 # pivot selection proportional to node degree
-def degreePivots(G, numberOfPivots):
+def ranDegPivots(G, numberOfPivots):
     degrees = list(G.degree())
     degreesVal = [x[1] for x in degrees]
 
@@ -48,7 +39,7 @@ def degreePivots(G, numberOfPivots):
     return allPivotDegrees
 
 # pivot selection by maximizing distance from previous pivot 
-def maxminPivots(G, numberOfPivots, mixed, nodeList, prevPivot):
+def maxMinPivots(G, numberOfPivots, mixed, nodeList, prevPivot):
     pivots = []
     if mixed == False:
         nodes = list(G.nodes)
@@ -73,7 +64,7 @@ def maxminPivots(G, numberOfPivots, mixed, nodeList, prevPivot):
     return pivots
 
 # pivot selection by maximizing ||distance|| from previous pivot 
-def maxsumPivots(G, numberOfPivots, mixed, nodeList, prevPivot):
+def maxSumPivots(G, numberOfPivots, mixed, nodeList, prevPivot):
     pivots = []
     if mixed == False:
         nodes = list(G.nodes)
@@ -103,7 +94,7 @@ def maxsumPivots(G, numberOfPivots, mixed, nodeList, prevPivot):
     return pivots
 
 # pivot selection by minimizing ||distance|| from previous pivot 
-def minsumPivots(G, numberOfPivots, mixed, nodeList, prevPivot):
+def minSumPivots(G, numberOfPivots, mixed, nodeList, prevPivot):
     pivots = []
     if mixed == False:
         nodes = list(G.nodes)
@@ -142,11 +133,11 @@ def mixed3Pivots(G, numberOfPivots):
     nodes.remove(firstPivot)
     for i in range (0, numberOfPivots - 1):
         if i % 3 == 0:
-            nextPivot = maxminPivots(G, 2, True, nodes, prevPivot)
+            nextPivot = maxMinPivots(G, 2, True, nodes, prevPivot)
         elif i % 3 == 1:
-            nextPivot = maxsumPivots(G, 2, True, nodes, prevPivot)
+            nextPivot = maxSumPivots(G, 2, True, nodes, prevPivot)
         elif i % 3 == 2:
-            nextPivot = minsumPivots(G, 2, True, nodes, prevPivot)
+            nextPivot = minSumPivots(G, 2, True, nodes, prevPivot)
 
         nextPivot = nextPivot[0]
         pivots.append(nextPivot)
@@ -155,7 +146,7 @@ def mixed3Pivots(G, numberOfPivots):
     return pivots
 
 # pivot selection proportional to node page rank value
-def pgrankPivots(G, numberOfPivots):
+def pgRankPivots(G, numberOfPivots):
     pageRank = nx.pagerank(G)
     pageRank = pageRank.items() # dict to list of tuples
     pageRankVal = [x[1] for x in pageRank]
@@ -284,15 +275,22 @@ def averageBetweenness(nodes, G):
     print('Time:', round(elapsedTime, 2))
     return averageBetweenness, elapsedTime
 
-pivots = randomPivots(G, numberOfPivots)
+numberOfNodes = 1000
 
-pivots1 = randomPivots(G, numberOfPivots)
-pivots2 = degreePivots(G, numberOfPivots)
-pivots3 = maxminPivots(G, numberOfPivots, False, 0, 0)
-pivots4 = maxsumPivots(G, numberOfPivots, False, 0, 0)
-pivots5 = minsumPivots(G, numberOfPivots, False, 0, 0)
-pivots6 = mixed3Pivots(G, numberOfPivots)
-pivots7 = pgrankPivots(G, numberOfPivots)
+# create a random Erdős-Rényi graph with probability for edge creation = 0.5
+G = nx.fast_gnp_random_graph(numberOfNodes, 0.5, seed = 2, directed = False)
+
+numberOfPivots1 = int(len(G)/10)
+numberOfPivots2 = int(len(G)/10/2)
+numberOfPivots3 = int(len(G)/100)
+
+pivots1 = randomPivots(G, numberOfPivots1)
+pivots2 = ranDegPivots(G, numberOfPivots1)
+pivots3 = maxMinPivots(G, numberOfPivots1, False, 0, 0)
+pivots4 = maxSumPivots(G, numberOfPivots1, False, 0, 0)
+pivots5 = minSumPivots(G, numberOfPivots1, False, 0, 0)
+pivots6 = mixed3Pivots(G, numberOfPivots1)
+pivots7 = pgRankPivots(G, numberOfPivots1)
 
 # exact closeness centrality
 print('\nExact closeness centrality')
@@ -304,8 +302,8 @@ averageBetweennessAllNodes = averageBetweenness(list(G.nodes), G)
 
 # closeness centrality approximation
 print('\nApprox closeness centrality')
-averageClosenessPivots = averageCloseness(pivots, G)
+averageClosenessPivots = averageCloseness(pivots1, G)
 
 # betweenness centrality approximation
 print('\nApprox betweenness centrality')
-averageBetweennessPivots = averageBetweenness(pivots, G)
+averageBetweennessPivots = averageBetweenness(pivots1, G)

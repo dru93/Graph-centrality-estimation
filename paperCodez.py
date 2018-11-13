@@ -3,16 +3,20 @@ import time
 import random
 import statistics
 import numpy as np
+import pandas as pd
 import networkx as nx
 
 # random pivot selection
 def randomPivots(G, numberOfPivots):
+
     nodes = list(G.nodes)
     pivots = random.sample(nodes,numberOfPivots)
+
     return pivots
 
 # pivot selection proportional to node degree
 def ranDegPivots(G, numberOfPivots):
+
     degrees = list(G.degree())
     degreesVal = [x[1] for x in degrees]
 
@@ -36,10 +40,12 @@ def ranDegPivots(G, numberOfPivots):
     pivots4 = random.sample([x[0] for x in group4], int(nOfSamplesGroup4))
 
     allPivotDegrees = pivots1 + pivots2 + pivots3 + pivots4
+
     return allPivotDegrees
 
 # pivot selection by maximizing distance from previous pivot 
 def maxMinPivots(G, numberOfPivots, mixed, nodeList, prevPivot):
+
     pivots = []
     if mixed == False:
         nodes = list(G.nodes)
@@ -50,6 +56,7 @@ def maxMinPivots(G, numberOfPivots, mixed, nodeList, prevPivot):
     else:
         nodes = nodeList
         prevPivot = prevPivot
+
     for _ in range (0, numberOfPivots - 1):
         pivot = prevPivot
         maxminDistance = 0
@@ -61,10 +68,12 @@ def maxMinPivots(G, numberOfPivots, mixed, nodeList, prevPivot):
         pivots.append(nextPivot)
         nodes.remove(nextPivot)
         prevPivot = nextPivot
+
     return pivots
 
 # pivot selection by maximizing ||distance|| from previous pivot 
 def maxSumPivots(G, numberOfPivots, mixed, nodeList, prevPivot):
+
     pivots = []
     if mixed == False:
         nodes = list(G.nodes)
@@ -75,6 +84,7 @@ def maxSumPivots(G, numberOfPivots, mixed, nodeList, prevPivot):
     else:
         nodes = nodeList
         prevPivot = prevPivot
+
     for _ in range (0, numberOfPivots - 1):
         pivot = prevPivot
         maxsumDistance = 0
@@ -91,10 +101,12 @@ def maxSumPivots(G, numberOfPivots, mixed, nodeList, prevPivot):
         pivots.append(nextPivot)
         nodes.remove(nextPivot)
         prevPivot = nextPivot
+
     return pivots
 
 # pivot selection by minimizing ||distance|| from previous pivot 
 def minSumPivots(G, numberOfPivots, mixed, nodeList, prevPivot):
+
     pivots = []
     if mixed == False:
         nodes = list(G.nodes)
@@ -105,6 +117,7 @@ def minSumPivots(G, numberOfPivots, mixed, nodeList, prevPivot):
     else:
         nodes = nodeList
         prevPivot = prevPivot
+
     for _ in range (0, numberOfPivots - 1):
         pivot = prevPivot
         minsumDistance = sys.maxsize
@@ -121,16 +134,19 @@ def minSumPivots(G, numberOfPivots, mixed, nodeList, prevPivot):
         pivots.append(nextPivot)
         nodes.remove(nextPivot)
         prevPivot = nextPivot
+
     return pivots
 
 # pivot selection by alternating maxmin, maxsum and minsum
 def mixed3Pivots(G, numberOfPivots):
+
     nodes = list(G.nodes)
     pivots = []
     firstPivot = random.sample(nodes,1)[0]
     pivots.append(firstPivot)
     prevPivot = firstPivot
     nodes.remove(firstPivot)
+
     for i in range (0, numberOfPivots - 1):
         if i % 3 == 0:
             nextPivot = maxMinPivots(G, 2, True, nodes, prevPivot)
@@ -143,10 +159,12 @@ def mixed3Pivots(G, numberOfPivots):
         pivots.append(nextPivot)
         # nodes.remove(nextPivot)
         prevPivot = nextPivot
+
     return pivots
 
 # pivot selection proportional to node page rank value
 def pgRankPivots(G, numberOfPivots):
+
     pageRank = nx.pagerank(G)
     pageRank = pageRank.items() # dict to list of tuples
     pageRankVal = [x[1] for x in pageRank]
@@ -171,10 +189,12 @@ def pgRankPivots(G, numberOfPivots):
     pivots4 = random.sample([x[0] for x in group4], int(nOfSamplesGroup4))
 
     allPivotDegrees = pivots1 + pivots2 + pivots3 + pivots4
+
     return allPivotDegrees
 
 # closeness centrality of nodes in graph G
 def closeness(nodes, G):
+
     closenessNodes = []
     for node in range(0 ,len(nodes)-1):
         closenessNodes.append(nx.closeness_centrality(G, node))  
@@ -183,17 +203,20 @@ def closeness(nodes, G):
 
 # average closeness centrality of all nodes in graph G
 def averageCloseness(nodes, G):
+
     start = time.time()
     closenessNodes = closeness(nodes, G)
     averageCloseness = statistics.mean(closenessNodes)
     end = time.time()
     elapsedTime = end - start
+
     print ('Value:', round(averageCloseness, 6))
-    print('Time:', round(elapsedTime, 2))
+    print('Time: ', round(elapsedTime, 2), 'sec')
     return averageCloseness, elapsedTime
 
 # betweenness functions
 def single_source_shortest_path_basic(G, s):
+
     S = []
     P = {}
     for v in G:
@@ -215,10 +238,12 @@ def single_source_shortest_path_basic(G, s):
             if D[w] == Dv + 1:   # this is a shortest path, count paths
                 sigma[w] += sigmav
                 P[w].append(v)  # predecessors
+
     return S, P, sigma
 
 # betweenness functions
 def accumulate_endpoints(betweenness, S, P, sigma, s):
+
     betweenness[s] += len(S) - 1
     delta = dict.fromkeys(S, 0)
     while S:
@@ -228,10 +253,12 @@ def accumulate_endpoints(betweenness, S, P, sigma, s):
             delta[v] += sigma[v] * coeff
         if w != s:
             betweenness[w] += delta[w] + 1
+
     return betweenness
 
 # betweenness functions
 def rescale(betweenness, n, normalized, directed=False, endpoints=False):
+
     if normalized:
         if endpoints:
             if n < 2:
@@ -251,10 +278,12 @@ def rescale(betweenness, n, normalized, directed=False, endpoints=False):
     if scale is not None:
         for v in betweenness:
             betweenness[v] *= scale
+
     return betweenness
 
 # betweenness centrality of nodes in graph G
 def betweenness(nodes, G):
+
     betweennessNodes = dict.fromkeys(G, 0.0)  # b[v]=0 for v in G
     
     for s in nodes:
@@ -266,44 +295,84 @@ def betweenness(nodes, G):
 
 # average betweenness centrality of all nodes in graph G
 def averageBetweenness(nodes, G):
+
     start = time.time()
-    betweennessNodes = betweenness(list(G.nodes), G)
+    betweennessNodes = betweenness(nodes, G)
     averageBetweenness = statistics.mean(betweennessNodes)
     end = time.time()
     elapsedTime = end - start
+
     print ('Value:', round(averageBetweenness, 6))
-    print('Time:', round(elapsedTime, 2))
+    print('Time: ', round(elapsedTime, 2), 'sec')
+
     return averageBetweenness, elapsedTime
+
+# driver function to pff dunno I guess to drive stuff 
+def driver(Graph, pivotSelection, numberOfPivots):
+
+    if pivotSelection == 'randomPivots':
+        pivots = randomPivots(Graph, numberOfPivots)
+    elif pivotSelection == 'ranDegPivots':
+        pivots = ranDegPivots(Graph, numberOfPivots)
+    elif pivotSelection == 'maxMinPivots':
+        pivots = maxMinPivots(Graph, numberOfPivots, False, 0, 0)
+    elif pivotSelection == 'maxSumPivots':
+        pivots = maxSumPivots(Graph, numberOfPivots, False, 0, 0)
+    elif pivotSelection == 'minSumPivots':
+        pivots = minSumPivots(Graph, numberOfPivots, False, 0, 0)
+    elif pivotSelection == 'mixed3Pivots':
+        pivots = mixed3Pivots(Graph, numberOfPivots)
+    elif pivotSelection == 'pgRankPivots':
+        pivots = pgRankPivots(Graph, numberOfPivots)
+    elif pivotSelection == 'none':
+        pivots = list(Graph.nodes)
+
+    print('\nPivot selection strategy:', pivotSelection)
+    print('Number of pivots:', numberOfPivots)
+
+    print('\nCloseness centrality')
+    closeness = averageCloseness(pivots, Graph)
+
+    print('\nBetweenness centrality')
+    betweenness = averageBetweenness(pivots, Graph)
+
+    results = pd.DataFrame([list(closeness + betweenness)])
+    columnNames = ['closeness value', 'closeness time', 'betweenness value', 'betweenness time']
+    results.columns = columnNames
+
+    return results
 
 numberOfNodes = 1000
 
 # create a random Erdős-Rényi graph with probability for edge creation = 0.5
 G = nx.fast_gnp_random_graph(numberOfNodes, 0.5, seed = 2, directed = False)
 
-numberOfPivots1 = int(len(G)/10)
-numberOfPivots2 = int(len(G)/10/2)
-numberOfPivots3 = int(len(G)/100)
+noPivots = driver(G, 'none', numberOfNodes)
 
-pivots1 = randomPivots(G, numberOfPivots1)
-pivots2 = ranDegPivots(G, numberOfPivots1)
-pivots3 = maxMinPivots(G, numberOfPivots1, False, 0, 0)
-pivots4 = maxSumPivots(G, numberOfPivots1, False, 0, 0)
-pivots5 = minSumPivots(G, numberOfPivots1, False, 0, 0)
-pivots6 = mixed3Pivots(G, numberOfPivots1)
-pivots7 = pgRankPivots(G, numberOfPivots1)
+randomPivots100 = driver(G, 'randomPivots', 100)
+randomPivots50  = driver(G, 'randomPivots', 50)
+randomPivots10  = driver(G, 'randomPivots', 10)
 
-# exact closeness centrality
-print('\nExact closeness centrality')
-averageClosenessAllNodes = averageCloseness(list(G.nodes), G)
+ranDegPivots100 = driver(G, 'ranDegPivots', 100)
+ranDegPivots50  = driver(G, 'ranDegPivots', 50)
+ranDegPivots10  = driver(G, 'ranDegPivots', 10)
 
-# exact betweenness centrality
-print('\nExact betweenness centrality')
-averageBetweennessAllNodes = averageBetweenness(list(G.nodes), G)
+maxMinPivots100 = driver(G, 'maxMinPivots', 100)
+maxMinPivots50  = driver(G, 'maxMinPivots', 50)
+maxMinPivots10  = driver(G, 'maxMinPivots', 10)
 
-# closeness centrality approximation
-print('\nApprox closeness centrality')
-averageClosenessPivots = averageCloseness(pivots1, G)
+maxSumPivots100 = driver(G, 'maxSumPivots', 100)
+maxSumPivots50  = driver(G, 'maxSumPivots', 50)
+maxSumPivots10  = driver(G, 'maxSumPivots', 10)
 
-# betweenness centrality approximation
-print('\nApprox betweenness centrality')
-averageBetweennessPivots = averageBetweenness(pivots1, G)
+minSumPivots100 = driver(G, 'minSumPivots', 100)
+minSumPivots50  = driver(G, 'minSumPivots', 50)
+minSumPivots10  = driver(G, 'minSumPivots', 10)
+
+mixed3Pivots100 = driver(G, 'mixed3Pivots', 100)
+mixed3Pivots50  = driver(G, 'mixed3Pivots', 50)
+mixed3Pivots10  = driver(G, 'mixed3Pivots', 10)
+
+pgRankPivots100 = driver(G, 'pgRankPivots', 100)
+pgRankPivots50  = driver(G, 'pgRankPivots', 50)
+pgRankPivots10  = driver(G, 'pgRankPivots', 10)

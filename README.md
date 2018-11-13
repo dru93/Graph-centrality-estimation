@@ -6,29 +6,29 @@ Estimation of *closeness* and *betweenness* centrality measures based on pivot s
 
 ### Pivot selection strategies
 
-| Strategy      | Rule          |
-| ------------- |:-------------:|
-| `Random`      | uniformly at random |
-| `RanDeg`      | random proportional to degree |
+| Strategy      | Rule                                                     |
+|:-------------:|:--------------------------------------------------------:|
+| `Random`      | uniformly at random                                      |
+| `RanDeg`      | random proportional to degree                            |
 | `MaxMin`      | non-pivot maximizing minimum distance to previous pivots |
 | `MaxSum`      | non-pivot maximizing sum of distances to previous pivots |
 | `MinSum`      | non-pivot minimizing sum of distances to previous pivots |
-| `Mixed3`      | alternatingly MaxMin, MaxSum, and Random |
+| `Mixed3`      | alternatingly MaxMin, MaxSum, and Random                 |
 
 ### Added pivot selection strategies
 
-| Strategy      | Rule          |
-| ------------- |:-------------:|
-| `pgRank`      | random proportional to page rank |
+| Strategy      | Rule                                                     |
+|:-------------:|:--------------------------------------------------------:|
+| `pgRank`      | random proportional to page rank                         |
 
 ### Graphs tested
 
 1. Random Erdős-Rényi graph with 1000 nodes
-2. TODO Small worlds graph with 1000 nodes
-3. TODO preferential attachment
-4. TODO protein interaction
-5. TODO twitter graph?
-6. TODO 1st assignment graph
+2. *TO DO:* Small worlds graph with 1000 nodes
+3. *TO DO:* preferential attachment
+4. *TO DO:* protein interaction
+5. *TO DO:* twitter graph?
+6. *TO DO:* 1st assignment graph
 
 ### Number of Pivots tested
 

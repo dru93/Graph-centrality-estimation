@@ -344,8 +344,19 @@ def driver(Graph, pivotSelection, numberOfPivots):
 
 numberOfNodes = 1000
 
-# create a random Erdős-Rényi graph with probability for edge creation = 0.5
-G = nx.fast_gnp_random_graph(numberOfNodes, 0.5, seed = 2, directed = False)
+# Erdős-Rényi random graph
+# probability for edge creation = 0.5
+G = nx.fast_gnp_random_graph(numberOfNodes, 0.5, seed = 0, directed = False)
+
+# Watts-Strogatz small-world graph 
+# probability for edge rewiring = 0.5
+# each node is joined with its k = 10 nearest neighbors in a ring topology
+G2 = nx.watts_strogatz_graph(numberOfNodes, 10, 0.5, seed = 0)
+
+# Barabási-Albert preferential attachment model random graph
+# attaching new nodes each with m = 1000 edges that are preferentially
+# attached to existing nodes with high degree
+G3 = nx.barabasi_albert_graph(numberOfNodes, int(numberOfNodes/2) , seed = 0)
 
 noPivots = driver(G, 'none', numberOfNodes)
 

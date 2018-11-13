@@ -4,13 +4,16 @@ import statistics
 import numpy as np
 import networkx as nx
 
+numberOfNodes = 100
+
 # create a random Erdős-Rényi graph with 1000 nodes and probability for edge creation 0.5
-G = nx.fast_gnp_random_graph(1000, 0.5, seed = 1, directed = False)
+G = nx.fast_gnp_random_graph(numberOfNodes, 0.5, seed = 1, directed = False)
 
 # random pivot selection
+numberOfPivots = int(len(G)/10)
 
 def randomPivots(G, numberOfPivots):
-    nodes = list(G.nodes.keys())
+    nodes = list(G.nodes)
     pivots = random.sample(nodes,numberOfPivots)
     return pivots
 
@@ -38,31 +41,48 @@ def degreePivots(G, numberOfPivots):
     pivots4 = random.sample([x[0] for x in group4], int(nOfSamplesGroup4))
     allPivotDegrees = pivots1 + pivots2 + pivots3 + pivots4
     return allPivotDegrees
+
+def MaxminPivots(G, numberOfPivots):
+    nodes = list(G.nodes)
+    pivots = []
+    firstPivot = random.sample(nodes,1)[0]
+    pivots.append(firstPivot)
+    nodes.remove(firstPivot)
+    prevPivot = firstPivot
+    for _ in range (0, numberOfPivots - 1):
+        pivot = prevPivot
+        maxDistance = 0
+        for node in nodes:
+            distance = nx.shortest_path_length(G, source = pivot, target = node)
+            if  distance > maxDistance:
+                maxDistance = distance
+                nextPivot = node
+        pivots.append(nextPivot)
+        nodes.remove(nextPivot)
+        prevPivot = nextPivot
+    return pivots
+
+pivots = MaxminPivots(G, numberOfPivots)
+
+# closeness centrality of nodes in graph G
+def closeness(nodes, G):
+    closenessNodes = []
+    for node in range(0 ,len(nodes)-1):
+        closenessNodes.append(nx.closeness_centrality(G, node))  
     
-numberOfPivots = int(len(G)/10)
-pivots = degreePivots(G, numberOfPivots)
+    return closenessNodes
 
 # exact closeness centrality
 start = time.time()
-closenessActualNodeValues = nx.closeness_centrality(G)
-averageCloseness = statistics.mean(closenessActualNodeValues.values())
+closenessAllNodes = closeness(list(G.nodes), G)
+averageCloseness = statistics.mean(closenessAllNodes)
 end = time.time()
 elapsedCloseness = end - start
 
 # average graph closeness approximation
 start = time.time()
-nodeCloseness = []
-
-for n in G:
-    distances = []
-    for pivot in pivots:
-        path = nx.shortest_path(G, source = n, target = pivot)
-        pathLength = len(path)
-        distances.append(pathLength)
-    temp = numberOfPivots/sum(distances)
-    nodeCloseness.append(temp)
-
-averageClosenessApprox = statistics.mean(nodeCloseness)
+closenessPivots = closeness(pivots, G)
+averageClosenessApprox = statistics.mean(closenessPivots)
 end = time.time()
 elapsedClosenessApprox = end - start
 
@@ -126,41 +146,38 @@ def rescale(betweenness, n, normalized, directed=False, endpoints=False):
             betweenness[v] *= scale
     return betweenness
 
+# betweenness centrality of nodes in graph G
+def betweenness(nodes, G):
+    betweennessNodes = dict.fromkeys(G, 0.0)  # b[v]=0 for v in G
+    
+    for s in nodes:
+        S, P, sigma = single_source_shortest_path_basic(G, s)
+        betweennessNodes = accumulate_endpoints(betweennessNodes, S, P, sigma, s)
+        betweennessNodes = rescale(betweennessNodes, len(G), normalized=True,
+                            directed=False, endpoints=False)
+    return betweennessNodes.values()
+
 # exact betweenness centrality
 start = time.time()
-betweennessActualNodeValues = dict.fromkeys(G, 0.0)  # b[v]=0 for v in G
-
-for s in G:
-    S, P, sigma = single_source_shortest_path_basic(G, s)
-    betweennessActualNodeValues = accumulate_endpoints(betweennessActualNodeValues, S, P, sigma, s)
-    betweennessActualNodeValues = rescale(betweennessActualNodeValues, len(G), normalized=True,
-                        directed=False, endpoints=False)
-
-averageBetweenness = statistics.mean(betweennessActualNodeValues.values())
+betweennessAllNodeValues = betweenness(list(G.nodes), G)
+averageBetweenness = statistics.mean(betweennessAllNodeValues)
 end = time.time()
 elapsedBetweenness = end - start
 
 # approximated betweenness centrality
 start = time.time()
-betweennessApproxNodeValues = dict.fromkeys(G, 0.0)  # b[v]=0 for v in G
-
-for s in pivots:
-    S, P, sigma = single_source_shortest_path_basic(G, s)
-    betweennessApproxNodeValues = accumulate_endpoints(betweennessApproxNodeValues, S, P, sigma, s)
-    betweennessApproxNodeValues = rescale(betweennessApproxNodeValues, len(pivots), normalized=True,
-                        directed=False, endpoints=False)
-
-averageBetweennessApprox = statistics.mean(betweennessApproxNodeValues.values())
+betweennessPivotValues = betweenness(pivots, G)
+averageBetweennessApprox = statistics.mean(betweennessPivotValues)
 end = time.time()
 elapsedBetweennessApprox = end - start
 
 print('\nNumber of pivots:', numberOfPivots)
 
-print('\n\t~~~ Time tracks ~~~')
-print('Betweenness centrality:\t\t\t', round(elapsedBetweenness,2), 's')
-print('Betweenness centrality approximation:\t', round(elapsedBetweennessApprox,2), 's')
-print('Closeness centrality:\t\t\t', round(elapsedCloseness,2), 's')
-print('Closeness centrality approximation:\t', round(elapsedClosenessApprox,2), 's')
+print('\n\t~~~ Time tracks (sec) ~~~')
+print('Betweenness centrality:\t\t\t', round(elapsedBetweenness,2))
+print('Betweenness centrality approximation:\t', round(elapsedBetweennessApprox,2))
+print('Closeness centrality:\t\t\t', round(elapsedCloseness,2))
+print('Closeness centrality approximation:\t', round(elapsedClosenessApprox,2))
 
 print('\n\t~~~ Centrality values ~~~')
 print('Betweenness centrality:\t\t\t', round(averageBetweenness,6))

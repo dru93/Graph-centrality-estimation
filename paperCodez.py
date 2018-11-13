@@ -9,14 +9,15 @@ numberOfNodes = 100
 # create a random Erdős-Rényi graph with 1000 nodes and probability for edge creation 0.5
 G = nx.fast_gnp_random_graph(numberOfNodes, 0.5, seed = 1, directed = False)
 
-# random pivot selection
 numberOfPivots = int(len(G)/10)
 
+# random pivot selection
 def randomPivots(G, numberOfPivots):
     nodes = list(G.nodes)
     pivots = random.sample(nodes,numberOfPivots)
     return pivots
 
+# pivot selection proportional to node degree
 def degreePivots(G, numberOfPivots):
     degrees = list(G.degree())
     degreesVal = [x[1] for x in degrees]
@@ -42,6 +43,7 @@ def degreePivots(G, numberOfPivots):
     allPivotDegrees = pivots1 + pivots2 + pivots3 + pivots4
     return allPivotDegrees
 
+# pivot selection by maximizing distance from previous pivot 
 def MaxminPivots(G, numberOfPivots):
     nodes = list(G.nodes)
     pivots = []

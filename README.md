@@ -26,12 +26,11 @@ Estimation of *closeness* and *betweenness* centrality measures based on pivot s
 1. Erdős-Rényi random graph with 1000 nodes
 2. Watts-Strogatz small world graph with 1000 nodes
 3. Barabási-Albert preferential attachment model random graph with 1000 nodes
-4. *TO DO:* protein interaction
-5. *TO DO:* twitter graph?
-6. *TO DO:* 1st assignment graph
+4. *TO DO:* twitter graph (?)
+5. *TO DO:* 1st assignment graph (?)
 
 ### Number of Pivots tested
 
-1. Divided by 10 from original network number of nodes
-2. Divided by 50 from original network number of nodes
-3. Divided by 100 from original network number of nodes 
+1. 50% of graphs nodes
+2. 10% of graphs nodes
+3.  5% of graphs nodes 

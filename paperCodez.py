@@ -202,7 +202,7 @@ def closeness(nodes, G):
     return closenessNodes
 
 # average closeness centrality of all nodes in graph G
-def averageCloseness(nodes, G):
+def averageCloseness(nodes, G, boolPrint):
 
     start = time.time()
     closenessNodes = closeness(nodes, G)
@@ -210,8 +210,11 @@ def averageCloseness(nodes, G):
     end = time.time()
     elapsedTime = end - start
 
-    print ('Value:', round(averageCloseness, 6))
-    print('Time: ', round(elapsedTime, 2), 'sec')
+    if boolPrint:
+        print('\nCloseness centrality')
+        print ('Value:', round(averageCloseness, 6))
+        print('Time: ', round(elapsedTime, 2), 'sec')
+
     return averageCloseness, elapsedTime
 
 # betweenness functions
@@ -294,7 +297,7 @@ def betweenness(nodes, G):
     return betweennessNodes.values()
 
 # average betweenness centrality of all nodes in graph G
-def averageBetweenness(nodes, G):
+def averageBetweenness(nodes, G, boolPrint):
 
     start = time.time()
     betweennessNodes = betweenness(nodes, G)
@@ -302,88 +305,102 @@ def averageBetweenness(nodes, G):
     end = time.time()
     elapsedTime = end - start
 
-    print ('Value:', round(averageBetweenness, 6))
-    print('Time: ', round(elapsedTime, 2), 'sec')
+    if boolPrint:
+        print('\nBetweenness centrality')
+        print ('Value:', round(averageBetweenness, 6))
+        print('Time: ', round(elapsedTime, 2), 'sec')
 
     return averageBetweenness, elapsedTime
 
-# driver function to pff dunno I guess to drive stuff 
-def driver(Graph, pivotSelection, numberOfPivots):
+# driver function to ...pff dunno I guess to drive stuff 
+def driver(Graph, pivotSelection, numberOfPivots, boolPrint):
 
-    if pivotSelection == 'randomPivots':
-        pivots = randomPivots(Graph, numberOfPivots)
-    elif pivotSelection == 'ranDegPivots':
-        pivots = ranDegPivots(Graph, numberOfPivots)
-    elif pivotSelection == 'maxMinPivots':
-        pivots = maxMinPivots(Graph, numberOfPivots, False, 0, 0)
-    elif pivotSelection == 'maxSumPivots':
-        pivots = maxSumPivots(Graph, numberOfPivots, False, 0, 0)
-    elif pivotSelection == 'minSumPivots':
-        pivots = minSumPivots(Graph, numberOfPivots, False, 0, 0)
-    elif pivotSelection == 'mixed3Pivots':
-        pivots = mixed3Pivots(Graph, numberOfPivots)
-    elif pivotSelection == 'pgRankPivots':
-        pivots = pgRankPivots(Graph, numberOfPivots)
-    elif pivotSelection == 'none':
-        pivots = list(Graph.nodes)
+    howToSelectPivots = {'randomPivots': randomPivots(Graph, numberOfPivots),
+                        'ranDegPivots': ranDegPivots(Graph, numberOfPivots),
+                        'maxMinPivots': maxMinPivots(Graph, numberOfPivots, False, 0, 0),
+                        'maxSumPivots': maxSumPivots(Graph, numberOfPivots, False, 0, 0),
+                        'minSumPivots': minSumPivots(Graph, numberOfPivots, False, 0, 0),
+                        'mixed3Pivots': mixed3Pivots(Graph, numberOfPivots),
+                        'pgRankPivots': pgRankPivots(Graph, numberOfPivots),
+                        'none': list(Graph.nodes)}
+    
+    pivots = howToSelectPivots[pivotSelection]
 
-    print('\nPivot selection strategy:', pivotSelection)
-    print('Number of pivots:', numberOfPivots)
+    if boolPrint:
+        print('\nPivot selection strategy:', pivotSelection)
+        print('Number of pivots:', numberOfPivots)
 
-    print('\nCloseness centrality')
-    closeness = averageCloseness(pivots, Graph)
+    closeness = averageCloseness(pivots, Graph, boolPrint)
+    betweenness = averageBetweenness(pivots, Graph, boolPrint)
 
-    print('\nBetweenness centrality')
-    betweenness = averageBetweenness(pivots, Graph)
-
-    results = pd.DataFrame([list(closeness + betweenness)])
-    columnNames = ['closeness value', 'closeness time', 'betweenness value', 'betweenness time']
-    results.columns = columnNames
+    results = list(closeness + betweenness)
 
     return results
 
-numberOfNodes = 1000
+# function to make all graphs we wanna test
+def makeGraphs(numberOfNodes):
 
-# Erdős-Rényi random graph
-# probability for edge creation = 0.5
-G = nx.fast_gnp_random_graph(numberOfNodes, 0.5, seed = 0, directed = False)
+    # list containing all graphs tested
+    G = []
 
-# Watts-Strogatz small-world graph 
-# probability for edge rewiring = 0.5
-# each node is joined with its k = 10 nearest neighbors in a ring topology
-G2 = nx.watts_strogatz_graph(numberOfNodes, 10, 0.5, seed = 0)
+    # G[0]: Erdős-Rényi random graph
+    # probability for edge creation = 0.5
+    G.append(nx.fast_gnp_random_graph(numberOfNodes, 0.5, seed = 0, directed = False))
 
-# Barabási-Albert preferential attachment model random graph
-# attaching new nodes each with m = 1000 edges that are preferentially
-# attached to existing nodes with high degree
-G3 = nx.barabasi_albert_graph(numberOfNodes, int(numberOfNodes/2) , seed = 0)
+    # G[1]: Watts-Strogatz small-world graph 
+    # probability for edge rewiring = 0.5
+    # each node is joined with its k = 10 nearest neighbors in a ring topology
+    G.append(nx.watts_strogatz_graph(numberOfNodes, 10, 0.5, seed = 0))
 
-noPivots = driver(G, 'none', numberOfNodes)
+    # G[2]: Barabási-Albert preferential attachment model random graph
+    # attaching new nodes each with m = 1000 edges that are preferentially
+    # attached to existing nodes with high degree
+    G.append(nx.barabasi_albert_graph(numberOfNodes, int(numberOfNodes/2) , seed = 0))
 
-randomPivots100 = driver(G, 'randomPivots', 100)
-randomPivots50  = driver(G, 'randomPivots', 50)
-randomPivots10  = driver(G, 'randomPivots', 10)
+    return G
 
-ranDegPivots100 = driver(G, 'ranDegPivots', 100)
-ranDegPivots50  = driver(G, 'ranDegPivots', 50)
-ranDegPivots10  = driver(G, 'ranDegPivots', 10)
+# make random graphs with x nodes
+G = makeGraphs(100)
 
-maxMinPivots100 = driver(G, 'maxMinPivots', 100)
-maxMinPivots50  = driver(G, 'maxMinPivots', 50)
-maxMinPivots10  = driver(G, 'maxMinPivots', 10)
+graphTypes = {0:'Erdős-Rényi', 1:'Watts-Strogatz', 2:'Barabási-Albert'}
 
-maxSumPivots100 = driver(G, 'maxSumPivots', 100)
-maxSumPivots50  = driver(G, 'maxSumPivots', 50)
-maxSumPivots10  = driver(G, 'maxSumPivots', 10)
+pivotStrategies = {0:'randomPivots', 1:'ranDegPivots',
+                    2:'maxMinPivots', 3:'maxSumPivots',
+                    4:'minSumPivots', 5:'mixed3Pivots',
+                    6:'pgRankPivots', 7:'none'}
 
-minSumPivots100 = driver(G, 'minSumPivots', 100)
-minSumPivots50  = driver(G, 'minSumPivots', 50)
-minSumPivots10  = driver(G, 'minSumPivots', 10)
+# set to True if you want to print stuff
+boolPrint = False
 
-mixed3Pivots100 = driver(G, 'mixed3Pivots', 100)
-mixed3Pivots50  = driver(G, 'mixed3Pivots', 50)
-mixed3Pivots10  = driver(G, 'mixed3Pivots', 10)
+# list wil ALL values
+allValues = []
 
-pgRankPivots100 = driver(G, 'pgRankPivots', 100)
-pgRankPivots50  = driver(G, 'pgRankPivots', 50)
-pgRankPivots10  = driver(G, 'pgRankPivots', 10)
+# iterate through all graphs
+for g in range(0, len(G)):
+
+    # pivotLengths is a list with numbers of pivots to be selected
+    # should be 50%, 10% and 5% of graphs nodes 
+    pivotLengths = [int(len(G[g])/2), int(len(G[g])/10), int(len(G[g])/20)]
+    graphType = graphTypes[g]
+
+    # iterate through all pivot strategies
+    for s in range(0, len(pivotStrategies)):
+        strategy = pivotStrategies[s]
+
+        if strategy != 'none':
+            # iterate through all pivot lengths
+            for l in range(0, len(pivotLengths)):
+                numberOfPivots = pivotLengths[l]
+                test = driver(G[g], strategy, numberOfPivots, boolPrint)
+                allValues.append(test + [graphType] + [strategy] + [numberOfPivots])
+        else:
+            numberOfPivots = len(G[g])
+            test = driver(G[g], strategy, numberOfPivots, boolPrint)
+            allValues.append(test + [graphType] + [strategy] + [numberOfPivots])
+    
+columnNames = ['closeness value', 'closeness time',
+                'betweenness value', 'betweenness time',
+                'graph type', 'pivot strategy', 'number of pivots']
+
+# pandas dataframe to hold allValues nice and neat
+boomboom = pd.DataFrame(allValues, columns = columnNames)

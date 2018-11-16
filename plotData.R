@@ -120,3 +120,12 @@ for (graph in c(1:length(graphsList))){
     }
   }
 }
+
+# generic comment
+strategyScores = matrix(NA, nrow = length(pivotList), ncol = 2,
+                        dimnames = list(pivotList, c('closeness', 'betweenness')))
+
+for (strategy in c(1:length(pivotList))){
+  strategyScores[strategy,1] = length(which(closenessPvalues[pivotList[strategy],,] > 0.05))
+  strategyScores[strategy,2] = length(which(betweennessPvalues[pivotList[strategy],,] > 0.05))
+}

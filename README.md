@@ -1,36 +1,38 @@
 # Graph centrality estimation
-Estimation of *closeness* and *betweenness* centrality measures based on pivot selection strategies from:
+Sassy experiments estimating **closeness** and **betweenness** centrality measures based on pivot selection strategies from *Centrality Estimation in Large Networks* 2006 paper.
 
-### Centrality Estimation in Large Network
- http://algo.uni-konstanz.de/publications/bp-celn-06.pdf
+link to paper: http://algo.uni-konstanz.de/publications/bp-celn-06.pdf
 
 ### Pivot selection strategies
 
-| Strategy      | Rule                                                     |
-|:-------------:|:--------------------------------------------------------:|
-| `Random`      | uniformly at random                                      |
-| `RanDeg`      | random proportional to degree                            |
-| `MaxMin`      | non-pivot maximizing minimum distance to previous pivots |
-| `MaxSum`      | non-pivot maximizing sum of distances to previous pivots |
-| `MinSum`      | non-pivot minimizing sum of distances to previous pivots |
-| `Mixed3`      | alternatingly MaxMin, MaxSum, and Random                 |
+| Strategy | Selection rule                               |
+|:--------:|:--------------------------------------------:|
+| `Random` | uniformly at random                          |
+| `RanDeg` | random proportional to degree node value     |
+| `MaxMin` | maximize minimum distance to previous pivots |
+| `MaxSum` | maximize sum of distances to previous pivots |
+| `MinSum` | minimize sum of distances to previous pivots |
+| `Mixed3` | alternate between MaxMin, MaxSum, and Random |
+| `pgRank` | random proportional to page rank node value  |
 
-### Added pivot selection strategies
+### Graphs
 
-| Strategy      | Rule                                                     |
-|:-------------:|:--------------------------------------------------------:|
-| `pgRank`      | random proportional to page rank                         |
+| Graph                   | Number of nodes | Notes                    |
+|:-----------------------:|:---------------:|:------------------------:|
+| `Erdős-Rényi`           | 1000            | p = 0.5                  |
+| `Watts-Strogatz`        | 1000            | p = 0.5, k =10           |
+| `Barabási-Albert`       | 1000            | m = nodes/2      |
+| `Online social network` | 2862 or 279630  | courtesy of assignment 1 |
+| `Twitter mention graph` | ?               | courtesy of assignment 2 |
 
-### Graphs tested
+Note: number of nodes refers to numbers of nodes of largest connected component
 
-1. Erdős-Rényi random graph with 1000 nodes
-2. Watts-Strogatz small world graph with 1000 nodes
-3. Barabási-Albert preferential attachment model random graph with 1000 nodes
-4. *TO DO:* twitter graph (?)
-5. *TO DO:* 1st assignment graph (?)
+Graphs must be:
+1. undirected
+2. connected
+3. unweighted
 
-### Number of Pivots tested
-
-1. 50% of graphs nodes
-2. 10% of graphs nodes
-3.  5% of graphs nodes 
+To do:
+* find best pivot selection strategy:
+* find pivot means of centrality & betweenness values for each strategy
+* compute one-sample t-test between pivot means and exact values

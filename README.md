@@ -5,15 +5,18 @@ link to paper: `http://algo.uni-konstanz.de/publications/bp-celn-06.pdf`
 
 ## Pivot selection strategies
 
-| Strategy | Selection rule                               |
-|:--------:|:--------------------------------------------:|
-| `Random` | uniformly at random                          |
-| `RanDeg` | random proportional to degree node value     |
-| `pgRank` | random proportional to page rank node value  |
-| `MaxMin` | maximize minimum distance to previous pivots |
-| `MaxSum` | maximize sum of distances to previous pivots |
-| `MinSum` | minimize sum of distances to previous pivots |
-| `Mixed3` | alternate between MaxMin, MaxSum, and Random |
+| Strategy    | Selection rule                               |
+|:-----------:|:--------------------------------------------:|
+| `Random`    | uniformly at random                          |
+| `Degree`    | maximize degree node value                   |
+| `RanDeg`    | random proportional to degree node value     |
+| `pgRank`    | maximize node value                          |
+| `pgRankRev` | minimize node value                          |
+| `pgRankAlt` | alternating `pgRank` & `pgRankRev`           |
+| `MaxMin`    | maximize minimum distance to previous pivots |
+| `MaxSum`    | maximize sum of distances to previous pivots |
+| `MinSum`    | minimize sum of distances to previous pivots |
+| `Mixed3`    | alternating `MaxMin`, `MaxSum`, and `MinSum` |
 
 ## Graphs
 
@@ -22,5 +25,16 @@ link to paper: `http://algo.uni-konstanz.de/publications/bp-celn-06.pdf`
 | `Erdős-Rényi`           | 1000            |
 | `US power grid`         | 4941            |
 | `Price network  `       | 100000          |
-| `Online social network` | 2862 or 279630  |
-| `Twitter mention graph` | ?               |
+| `Online social network` | 279630          |
+
+## Pseudocode
+
+```python
+G = generate list of graphs
+
+for all graphs:
+	realV = calculate values of each node
+	for all pivot strategies:
+		idx = calculate pivot indexes of strategy
+		for all pivot numbers:
+			aprxV = calculate values of each node based on pivots

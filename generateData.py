@@ -79,6 +79,28 @@ def pgRankReversePivots(G, numberOfPivots):
 
     return pivots
 
+# pivot selection by alternating pgRank and pgRankRev
+def pgRankAlternatePivots(G, numberOfPivots):
+    pageRankVal = list(pagerank(G))
+    
+    a = np.array(pageRankVal)
+    # sorted degrees value indexes from min to max
+    sortedMaxToMinIndexes = np.argsort(a)[::]
+    # convert to list
+    pivotsSorted = sortedMaxToMinIndexes.tolist()
+    
+    pivots = []
+    # max then min then max etc alternating
+    for pivot in range(numberOfPivots):
+        if pivot % 2 == 0:
+            pivots.append(pivotsSorted[0])
+            pivotsSorted.remove(pivotsSorted[0])
+        else:
+            pivots.append(pivotsSorted[len(pivotsSorted)-1])
+            pivotsSorted.remove(pivotsSorted[len(pivotsSorted)-1])        
+
+    return pivots
+
 # pivot selection by maximizing distance from previous pivot 
 def maxMinPivots(G, numberOfPivots, mixed, nodeList, prevPivot):
 
@@ -198,19 +220,19 @@ def makeGraphs():
     G = []
 
     # Erdos-Renyi random graph with 1000 nodes
-    g, pos = triangulation(np.random.random((3000, 2)))
+    g, pos = triangulation(np.random.random((100, 2)))
     ret = random_rewire(g, 'erdos')
     G.append(g)
     # time elapsed: ~0s
 
-    # # US power grid graph
-    # g = collection.data['power']
-    # G.append(g)
-    # # time elapsed: ~5s
+    # US power grid graph
+    g = collection.data['power']
+    G.append(g)
+    # time elapsed: ~10s
 
     # Price network graph
-    # g = load_graph('resources/price.xml.gz')
-    # G.append(g)
+    g = load_graph('resources/price.xml.gz')
+    G.append(g)
     # time elapsed: ~22mins
 
     # # Online social network graph
@@ -229,15 +251,15 @@ if __name__ == "__main__":
 
     startTime = time.time()
 
-    graphsNames = {0:'Erdos-Renyi'}#, 1:'Power-grid', 2:'Price-Network'}#,
-    				# 2:'Barabasi-Albert', 3:'Online-Social-Network'}
+    graphsNames = {0:'Erdos-Renyi', 1:'Power-grid', 2:'Price-Network'}
+    				# 3:'Online-Social-Network'}
 
     # lists with ALL values calculated
     pivotValues = []
     realValues = []
 
     # iterate through all graphs
-    for g in range(len(G)):
+    for g in range(len(graphsNames)):
 
         graph = G[g]
         numberOfNodes = graph.num_vertices()
@@ -256,18 +278,19 @@ if __name__ == "__main__":
         realValues.append([averageClosenessExact] + [averageBetweennessExact] +
                          [graphsNames[g]] + ['noPivot'] + [numberOfNodes])
 
-        strategyNames = ['random', 'randeg', 'degree', 'pgRank', 'pgRankRev']
+        strategyNames = ['random', 'degree', 'pgRank', 'pgRankRev', 'pgRankAlt']#, 'randeg'
                     #  'maxMin', 'maxSum', 'minSum', 'mixed3'] 
 
         strategyDict = {0: randomPivots(graph, numberOfNodes),
-                        1: ranDegPivots(graph, numberOfNodes),
-                        2: degreePivots(graph, numberOfNodes),
-                        3: pgRankPivots(graph, numberOfNodes),
-                        4: pgRankReversePivots(graph, numberOfNodes)}
+                        1: degreePivots(graph, numberOfNodes),
+                        2: pgRankPivots(graph, numberOfNodes),
+                        3: pgRankReversePivots(graph, numberOfNodes),
+                        4: pgRankAlternatePivots(graph, numberOfNodes)}
                         # : maxMinPivots(graph, numberOfNodes, False, 0, 0),
                         # : maxSumPivots(graph, numberOfNodes, False, 0, 0),
                         # : minSumPivots(graph, numberOfNodes, False, 0, 0),
-                        # : mixed3Pivots(graph, numberOfNodes)}
+                        # : mixed3Pivots(graph, numberOfNodes),
+                        # : ranDegPivots(graph, numberOfNodes),
 
 
         # iterate through all pivot strategies

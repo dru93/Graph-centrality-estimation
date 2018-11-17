@@ -1,0 +1,4 @@
+closenessValue,betweennessValue,graphType,pivotStrategy,numberOfPivots
+0.24741046879489928,0.0030301564089139236,Erdos-Renyi,noPivot,1000
+0.0536788753370791,0.003642272813210304,Power-grid,noPivot,4941
+0.3260304245452331,1.7238827161367075e-09,Price-Network,noPivot,100000

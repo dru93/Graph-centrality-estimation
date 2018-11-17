@@ -10,13 +10,13 @@ link to paper: `http://algo.uni-konstanz.de/publications/bp-celn-06.pdf`
 | `Random`    | uniformly at random                          |
 | `Degree`    | maximize degree node value                   |
 | `RanDeg`    | random proportional to degree node value     |
-| `pgRank`    | maximize node value                          |
-| `pgRankRev` | minimize node value                          |
-| `pgRankAlt` | alternating `pgRank` & `pgRankRev`           |
+| `pgRank`    | maximize page rank node value                |
+| `pgRankRev` | minimize page rank node value                |
+| `pgRankAlt` | alternate `pgRank` & `pgRankRev`             |
 | `MaxMin`    | maximize minimum distance to previous pivots |
 | `MaxSum`    | maximize sum of distances to previous pivots |
 | `MinSum`    | minimize sum of distances to previous pivots |
-| `Mixed3`    | alternating `MaxMin`, `MaxSum`, and `MinSum` |
+| `Mixed3`    | alternate `MaxMin`, `MaxSum`, and `MinSum`   |
 
 ## Graphs
 

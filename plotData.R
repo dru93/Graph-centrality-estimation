@@ -11,18 +11,26 @@ library(ggplot2)
 # set to any directory you want, data must be there
 setwd('C:/Users/dru/Documents/[Dru]/Uni/SNACS/Centrality Paper/Graph-centrality-estimation-master')
 
+
+graphsList = c('Erdos-Renyi')#, 'Price-Network', 'Barabasi-Albert')#
+              # 'Power-grid', 'Online-Social-Net'
+              # 'Watts-Strogatz', 'Barabasi-Albert'
+
 # input dataframes
-pivotValues = read.csv('pivotValues.csv')
-realValues = read.csv('realValues.csv')
+pivotValues = as.data.frame(read.csv('results/pivotValues.csv'))
+realValues = as.data.frame(read.csv('results/realValues.csv'))
 # rename pivotStrategies 
 # pivotValues[,4] = substring(pivotValues[,4], first = 1, last = 6)
 
+# # omit pivot strategies
+# pivotValues = subset(pivotValues, pivotStrategy != 'pgRank')
+# pivotValues = subset(pivotValues, pivotStrategy != 'pgRankRev')
+# pivotValues = subset(pivotValues, pivotStrategy != 'pgRankAlt')
+# pivotValues = subset(pivotValues, pivotStrategy != 'degree')
+
 # display data just for ease
 View(pivotValues)
-View(realValues)
-
-graphsList = c('Erdos-Renyi', 'Power-grid', 'Price-Network')
-              #, 'Watts-Strogatz', 'Barabasi-Albert')
+# View(realValues)
 
 ########### Plot pivots ###########
 
@@ -37,15 +45,17 @@ for (g in c(1:length(graphsList))){
   for (v in c(1:2)){
     # tweak plot parameters for each case
     if (v == 1){
-      ylabMessage = 'Closeness Value'
-      fileName = paste(c(graphsList[g], 'Closeness.png'), collapse = '')
       realValue = realValues[g,1]
       ylabVariable = 'closenessValue'
+      ylabMessage = 'Closeness Value'
+      fileName = paste(c('images/', graphsList[g], '-Closeness', 
+                         realValues[g,5], '.png'), collapse = '')
     }else{
-      ylabMessage = 'Betweenness Value'
-      fileName = paste(c(graphsList[g], 'Betweenness.png'), collapse = '')
       realValue = realValues[g,2]
       ylabVariable = 'betweennessValue'
+      ylabMessage = 'Betweenness Value'
+      fileName = paste(c('images/', graphsList[g], '-Betweenness', 
+                         realValues[g,5], '.png'), collapse = '')
     }
     
     # actual plotting happens here  
@@ -53,16 +63,16 @@ for (g in c(1:length(graphsList))){
                      aes_string('numberOfPivots', ylabVariable, 
                                 color = 'pivotStrategy')
     ) +
-      geom_line(size = 0.8) +
-      geom_hline(yintercept = realValue, color = 'black') +
+    geom_line(size = 0.8) +
+    geom_hline(yintercept = realValue, color = 'black') +
       
-      labs(title = titleMessage,
+    labs(title = titleMessage,
            subtitle = subtitleMessage,
            x = 'Number of pivots',
            y = ylabMessage,
            color = 'Pivot \nselection \nstrategies') +
       
-      theme(plot.title = element_text(hjust = 0.5),
+    theme(plot.title = element_text(hjust = 0.5),
             plot.subtitle = element_text(hjust = 0.5),
             # comment below if fonts didn't really work out for you
             text = element_text(size=16, family='xkcd'),
@@ -78,9 +88,9 @@ for (g in c(1:length(graphsList))){
 
 # # print last plot
 # print(thePlot)
-
-# ########### Extract p-values ###########
 # 
+# # ########### Extract p-values ###########
+# # 
 # # list of strings with all pivot strategies names
 # pivotList = unique(pivotValues$pivotStrategy)
 # 
@@ -91,24 +101,24 @@ for (g in c(1:length(graphsList))){
 # # x axis: graph type
 # # y axis: pivot selection strategy
 # # z axis: number of pivots sampled
-# closenessPvalues = array(NA, dim = c(length(pivotList), length(graphsList), maxNumberOfPivots),
-#                           dimnames = list(pivotList, graphsList, c(1:maxNumberOfPivots)))
+# closenessPvalues = array(NA, dim = c(length(pivotList), length(graphsList), 20))#,
+#                           # dimnames = list(pivotList, graphsList, c(30:50)))
 # 
-# betweennessPvalues = array(NA, dim = c(length(pivotList), length(graphsList), maxNumberOfPivots),
-#                          dimnames = list(pivotList, graphsList, c(1:maxNumberOfPivots)))
+# betweennessPvalues = array(NA, dim = c(length(pivotList), length(graphsList), 20))#,
+#                          # dimnames = list(pivotList, graphsList, c(30:50)))
 # 
 # # iterate through all graphs
 # for (graph in c(1:length(graphsList))){
 #   # iterate through all pivot strategies
 #   for (strategy in c(1:length(pivotList))){
 #     # iterate through number of pivots sampled
-#     for (pivots in c(2:maxNumberOfPivots)){
+#     for (pivots in c(30:50)){
 #       
 #       # subset only relevant data
-#       data = subset(pivotValues, 
+#       data = subset(pivotValues,
 #                     pivotStrategy == pivotList[strategy] &
-#                     graphType == graphsList[graph] &
-#                     numberOfPivots <= pivots)
+#                       graphType == graphsList[graph] &
+#                       numberOfPivots <= pivots)
 #       # calculate differences
 #       closenessDiff = data$closenessValue - realValues[graph,1]
 #       betweennessDiff = data$betweennessValue - realValues[graph,2]
@@ -122,11 +132,11 @@ for (g in c(1:length(graphsList))){
 #   }
 # }
 # 
-# # generic comment
-# strategyScores = matrix(NA, nrow = length(pivotList), ncol = 2,
-#                         dimnames = list(pivotList, c('closeness', 'betweenness')))
+# # # generic comment
+# # strategyScores = matrix(NA, nrow = length(pivotList), ncol = 2,
+# #                         dimnames = list(pivotList, c('closeness', 'betweenness')))
 # 
-# for (strategy in c(1:length(pivotList))){
-#   strategyScores[strategy,1] = length(which(closenessPvalues[pivotList[strategy],,] > 0.05))
-#   strategyScores[strategy,2] = length(which(betweennessPvalues[pivotList[strategy],,] > 0.05))
-# }
+# # for (strategy in c(1:length(pivotList))){
+# #   strategyScores[strategy,1] = length(which(closenessPvalues[pivotList[strategy],,] > 0.05))
+# #   strategyScores[strategy,2] = length(which(betweennessPvalues[pivotList[strategy],,] > 0.05))
+# # }

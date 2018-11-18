@@ -23,8 +23,8 @@ Sassy experiments estimating **closeness** and **betweenness** centrality measur
 
 | Graph                   | Number of nodes |
 |:-----------------------:|:---------------:|
-| `Erdős-Rényi`           | $10^5$          |
-| `Barabási–Albert`       | $10^5$          |
-| `Price network `        | $10^5$          |
-| `US power grid`         | $4941$          |
-| `Online social network` | $279630$        |
+| `Erdős-Rényi`           | `10^5`          |
+| `Barabási–Albert`       | `10^5`          |
+| `Price network `        | `10^5`          |
+| `US power grid`         | `4941`          |
+| `Online social network` | `279630`        |

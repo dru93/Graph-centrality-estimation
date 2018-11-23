@@ -5,16 +5,27 @@ import numpy as np
 import pandas as pd
 from graph_tool.all import *
 
+'''
+Generate graphs
+Compute closeness and betweenness values for each node
+Select pivots by different pivot selection strategies
+'''
+
 # random pivot selection
 def randomPivots(G, numberOfPivots):
 
+    start = time.time()
     nodes = list(G.get_vertices())
     pivots = random.sample(nodes, numberOfPivots)
+    end = time.time()
+    print('\t\tRandom pivot selection:', round(end-start, 4), 'sec')
 
     return pivots
 
 # pivot selection proportional to node degree
 def ranDegPivots(G, numberOfPivots):
+    
+    start = time.time()
 
     degreesVal = G.get_out_degrees(G.get_vertices())
     a = degreesVal
@@ -33,10 +44,15 @@ def ranDegPivots(G, numberOfPivots):
                     zeroz[j] = 1
                     pivots.append(j) 
 
+    end = time.time()
+    print('\t\tRandom degree pivot selection:', round(end-start, 4), 'sec')
+
     return pivots
 
 # pivot selection proportional to node page rank
 def ranPgRankPivots(G, numberOfPivots):
+
+    start = time.time()
 
     pageRankVal = list(pagerank(G))
     a = pageRankVal
@@ -55,10 +71,15 @@ def ranPgRankPivots(G, numberOfPivots):
                     zeroz[j] = 1
                     pivots.append(j) 
 
+    end = time.time()
+    print('\t\tRandom page rank pivot selection:', round(end-start, 4), 'sec')
+    
     return pivots
 
 # pivot selection proportional to node degree MAX
 def degreePivots(G, numberOfPivots):
+
+    start = time.time()
 
     degreesVal = list(G.get_out_degrees(G.get_vertices()))
 
@@ -70,10 +91,15 @@ def degreePivots(G, numberOfPivots):
     # select subsection
     pivots = pivots[0:numberOfPivots]
 
+    end = time.time()
+    print('\t\tDegree pivot selection:', round(end-start, 4), 'sec')
+
     return pivots
 
 # pivot selection proportional to node page rank value
 def pgRankPivots(G, numberOfPivots):
+
+    start = time.time()
 
     pageRankVal = list(pagerank(G))
 
@@ -85,10 +111,15 @@ def pgRankPivots(G, numberOfPivots):
     # select subsection
     pivots = pivots[0:numberOfPivots]
 
+    end = time.time()
+    print('\t\tPage rank pivot selection:', round(end-start, 4), 'sec')
+
     return pivots
 
 # pivot selection proportional to node page rank value
 def pgRankReversePivots(G, numberOfPivots):
+
+    start = time.time()
 
     pageRankVal = list(pagerank(G))
 
@@ -100,10 +131,16 @@ def pgRankReversePivots(G, numberOfPivots):
     # select subsection
     pivots = pivots[0:numberOfPivots]
 
+    end = time.time()
+    print('\t\tPage rank reverse pivot selection:', round(end-start, 4), 'sec')
+
     return pivots
 
 # pivot selection by alternating pgRank and pgRankRev
 def pgRankAlternatePivots(G, numberOfPivots):
+
+    start = time.time()
+
     pageRankVal = list(pagerank(G))
     
     a = np.array(pageRankVal)
@@ -122,10 +159,15 @@ def pgRankAlternatePivots(G, numberOfPivots):
             pivots.append(pivotsSorted[len(pivotsSorted)-1])
             pivotsSorted.remove(pivotsSorted[len(pivotsSorted)-1])        
 
+    end = time.time()
+    print('\t\tPage rank alternate pivot selection:', round(end-start, 4), 'sec')
+
     return pivots
 
 # pivot selection by maximizing distance from previous pivot 
 def maxMinPivots(G, numberOfPivots, mixed, nodeList, prevPivot):
+
+    start = time.time()
 
     pivots = []
     if mixed == False:
@@ -150,10 +192,16 @@ def maxMinPivots(G, numberOfPivots, mixed, nodeList, prevPivot):
         nodes.remove(nextPivot)
         prevPivot = nextPivot
 
+    end = time.time()
+    if mixed == False:
+        print('\t\tMaxmin pivot selection:', round(end-start, 4), 'sec')
+
     return pivots
 
 # pivot selection by maximizing sum(distances) from previous pivot 
 def maxSumPivots(G, numberOfPivots, mixed, nodeList, prevPivot):
+
+    start = time.time()
 
     pivots = []
     if mixed == False:
@@ -181,10 +229,17 @@ def maxSumPivots(G, numberOfPivots, mixed, nodeList, prevPivot):
         nodes.remove(nextPivot)
         prevPivot = nextPivot
 
+    end = time.time()
+
+    if mixed == False:
+        print('\t\tMaxsum pivot selection:', round(end-start, 4), 'sec')
+
     return pivots
 
 # pivot selection by minimizing sum(distances) from previous pivot 
 def minSumPivots(G, numberOfPivots, mixed, nodeList, prevPivot):
+
+    start = time.time()
 
     pivots = []
     if mixed == False:
@@ -210,10 +265,16 @@ def minSumPivots(G, numberOfPivots, mixed, nodeList, prevPivot):
         nodes.remove(nextPivot)
         prevPivot = nextPivot
 
+    end = time.time()
+    if mixed == False:
+        print('\t\tMinsum pivot selection:', round(end-start, 4), 'sec')
+
     return pivots
 
 # pivot selection by alternating maxmin, maxsum and minsum
 def mixed3Pivots(G, numberOfPivots):
+
+    start = time.time()
 
     pivots = []
     nodes = list(G.get_vertices())
@@ -234,16 +295,18 @@ def mixed3Pivots(G, numberOfPivots):
         pivots.append(nextPivot)
         prevPivot = nextPivot
 
+    end = time.time()
+    print('\t\tMixed3 pivot selection:', round(end-start, 4), 'sec')
+
     return pivots
 
 # function to make all graphs we wanna test
-def makeGraphs():
+def makeGraphs(numberOfNodes):
 
     # list containing all graphs tested
     G = []
 
-    numberOfNodes = 20#pow(10,2)
-    # 380 sec: pow(10,5), G1-3
+    # 380 sec: pow(10,4)
     # pow(10,6): Segmentation fault (core dumped)
     # with distances: 18, 120sec
     # with distances: 20, 360sec
@@ -253,11 +316,6 @@ def makeGraphs():
     ret = random_rewire(g, 'erdos')
     G.append(g)
     # time elapsed: ~80s, n = 10000
-
-    # Price network graph
-    g =  price_network(numberOfNodes)
-    G.append(g)
-    # time elapsed: ~ok
 
     # Barabasi-Albert graph
     g =  price_network(numberOfNodes, directed = False)
@@ -279,14 +337,24 @@ def makeGraphs():
 
     return G
 
+def drawGraph(g, graphName):
+    graph_draw(g, pos = sfdp_layout(g, cooling_step=0.99),
+            vertex_fill_color = g.vertex_index, vertex_size=2,
+            edge_pen_width=1,
+            output = 'images/' + str(g.num_vertices()) + '-' + graphName + '.png')
+
 if __name__ == "__main__":
 
-    G = makeGraphs()
+    if (len(sys.argv) < 2):
+        numberOfNodes = int(input('Select number of nodes for random graphs: '))
+    else:
+        numberOfNodes = int(sys.argv[1])
 
-    startTime = time.time()
+    G = makeGraphs(numberOfNodes)
 
-    graphsNames = ['Erdos-Renyi']#, 'Price-Network', 'Barabasi-Albert']
-                    # 'Power-grid']
+    startGlobal = time.time()
+
+    graphsNames = ['Erdos-Renyi', 'Barabasi-Albert']#, 'Power-grid']
     				# 'Online-Social-Network']
 
     # lists with ALL values calculated
@@ -298,13 +366,26 @@ if __name__ == "__main__":
     # iterate through all graphs
     for g in range(len(graphsNames)):
 
+        print(graphsNames[g], 'Graph calculations')
+
         graph = G[g]
         numberOfNodes = graph.num_vertices()
 
-        nodes = list(graph.get_vertices())
+        # draw graphs
+        if numberOfNodes <= 10^5:
+            start = time.time()
+            drawGraph(graph, graphsNames[g])
+            end = time.time()
+            print('\tDrawing', round(end-start, 4), 'sec')
 
+        start = time.time()
         closenessOfAllNodes = list(closeness(graph))
+        end = time.time()
+        print('\tAverage closeness centrality', round(end-start, 4), 'sec')
+        start = time.time()
         betweennessOfAllNodes = list(betweenness(graph)[0])
+        end = time.time()
+        print('\tAverage betweenness centrality', round(end-start, 4), 'sec')
 
         # omit nan values
         temp = np.array(closenessOfAllNodes)
@@ -316,8 +397,10 @@ if __name__ == "__main__":
                          [graphsNames[g]] + ['noPivot'] + [numberOfNodes])
 
         strategyNames = ['random', 'ranDeg', 'ranPgRank', 
-                        'degree', 'pgRank', 'pgRankRev', 'pgRankAlt']
-                        #  'maxMin', 'maxSum', 'minSum', 'mixed3'] 
+                        'degree', 'pgRank', 'pgRankRev', 'pgRankAlt',
+                        'maxMin', 'maxSum', 'minSum', 'mixed3'] 
+
+        print ('\tPivots:')
 
         strategyDict = {'random': randomPivots(graph, numberOfNodes),
                         'ranDeg': ranDegPivots(graph, numberOfNodes),
@@ -331,13 +414,13 @@ if __name__ == "__main__":
                         'minSum': minSumPivots(graph, numberOfNodes, False, 0, 0),
                         'mixed3': mixed3Pivots(graph, numberOfNodes)}
 
-
         # iterate through all pivot strategies
         for strategy in strategyNames:
-
+            
             # calculate all pivot values once
+            
             allPivots = strategyDict[strategy]
-                        
+
             closenessOfAllPivots = []
             betweennessOfAllPivots = []
             for pivotIndex in range(numberOfNodes):
@@ -363,12 +446,12 @@ if __name__ == "__main__":
     pivotValues = pd.DataFrame(pivotValues, columns = columnNames)
     realValues = pd.DataFrame(realValues, columns = columnNames)
 
-    pivotFileName = 'results/pivotValues.csv'
-    realFileName = 'results/realValues.csv'
+    pivotFileName = 'tables/pivotValues.csv'
+    realFileName = 'tables/realValues.csv'
     pivotValues.to_csv(pivotFileName, sep = ',',  index = False)
     realValues.to_csv(realFileName, sep = ',',  index = False)
 
 
 
-    endTime = time.time()
-    print('time elapsed:',int(endTime - startTime),'sec')
+    endGlobal = time.time()
+    print('time elapsed:',int(endGlobal - startGlobal),'sec')

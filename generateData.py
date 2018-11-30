@@ -12,13 +12,14 @@ Select pivots by different pivot selection strategies
 '''
 
 # random pivot selection
-def randomPivots(G, numberOfPivots):
+def randomPivots(G, numberOfPivots, mixed):
 
     start = time.time()
     nodes = list(G.get_vertices())
     pivots = random.sample(nodes, numberOfPivots)
     end = time.time()
-    print('\t\tRandom pivot selection:', round(end-start, 4), 'sec')
+    if mixed == False:
+        print('\t\tRandom pivot selection:', round(end-start, 4), 'sec')
 
     return pivots
 
@@ -285,7 +286,7 @@ def mixed3Pivots(G, numberOfPivots):
 
     for i in range (numberOfPivots - 1):
         if i % 3 == 0:
-            nextPivot = maxMinPivots(G, 2, True, nodes, prevPivot)
+            nextPivot = randomPivots(G, 1, True)
         elif i % 3 == 1:
             nextPivot = maxSumPivots(G, 2, True, nodes, prevPivot)
         elif i % 3 == 2:
@@ -306,38 +307,29 @@ def makeGraphs(numberOfNodes):
     # list containing all graphs tested
     G = []
 
-    # 380 sec: pow(10,4)
-    # pow(10,6): Segmentation fault (core dumped)
-    # with distances: 18, 120sec
-    # with distances: 20, 360sec
+    # # Erdos-Renyi random graph with n nodes
+    # g, pos = triangulation(np.random.random((numberOfNodes, 2)))
+    # ret = random_rewire(g, 'erdos')
+    # G.append(g)
 
-    # Erdos-Renyi random graph with n nodes
-    g, pos = triangulation(np.random.random((numberOfNodes, 2)))
-    ret = random_rewire(g, 'erdos')
-    G.append(g)
-    # time elapsed: ~80s, n = 10000
-
-    # Barabasi-Albert graph
-    g =  price_network(numberOfNodes, directed = False)
-    G.append(g)
-    # time elapsed: ~22mins
+    # # Barabasi-Albert graph
+    # g =  price_network(numberOfNodes, directed = False)
+    # G.append(g)
 
     # US power grid graph
     g = collection.data['power']
     G.append(g)
-    # time elapsed: ~10s
 
     # # Online social network graph
     # df = pd.read_csv('resources/large.tsv', sep = '\t')
     # g = Graph(directed = True)
     # g.add_edge_list(df.values)
     # G.append(g)
-    # # time elapsed: ~12h
-
 
     return G
 
 def drawGraph(g, graphName):
+    
     graph_draw(g, pos = sfdp_layout(g, cooling_step=0.99),
             vertex_fill_color = g.vertex_index, vertex_size=2,
             edge_pen_width=1,
@@ -350,12 +342,15 @@ if __name__ == "__main__":
     else:
         numberOfNodes = int(sys.argv[1])
 
+    print('started')
+    start = time.time()
     G = makeGraphs(numberOfNodes)
+    end = time.time()
+    print('Making graphs:', round(end-start, 4), 'sec')
 
     startGlobal = time.time()
 
-    graphsNames = ['Erdos-Renyi', 'Barabasi-Albert']#, 'Power-grid']
-    				# 'Online-Social-Network']
+    graphsNames = ['Power-grid']#'Erdos-Renyi', 'Barabasi-Albert']#, 'Online-Social-Network']#
 
     # lists with ALL values calculated
     pivotValues = []
@@ -371,12 +366,12 @@ if __name__ == "__main__":
         graph = G[g]
         numberOfNodes = graph.num_vertices()
 
-        # draw graphs
-        if numberOfNodes <= 10^5:
-            start = time.time()
-            drawGraph(graph, graphsNames[g])
-            end = time.time()
-            print('\tDrawing', round(end-start, 4), 'sec')
+        # # draw graphs
+        # # if numberOfNodes <= 10^6:
+        # start = time.time()
+        # drawGraph(graph, graphsNames[g])
+        # end = time.time()
+        # print('\tDrawing', round(end-start, 4), 'sec')
 
         start = time.time()
         closenessOfAllNodes = list(closeness(graph))
@@ -397,22 +392,22 @@ if __name__ == "__main__":
                          [graphsNames[g]] + ['noPivot'] + [numberOfNodes])
 
         strategyNames = ['random', 'ranDeg', 'ranPgRank', 
-                        'degree', 'pgRank', 'pgRankRev', 'pgRankAlt',
-                        'maxMin', 'maxSum', 'minSum', 'mixed3'] 
+                        'degree', 'pgRank', 'pgRankRev', 'pgRankAlt']#,
+                        #'maxMin', 'maxSum', 'minSum', 'mixed3'] 
 
         print ('\tPivots:')
 
-        strategyDict = {'random': randomPivots(graph, numberOfNodes),
+        strategyDict = {'random': randomPivots(graph, numberOfNodes, False),
                         'ranDeg': ranDegPivots(graph, numberOfNodes),
                         'ranPgRank': ranPgRankPivots(graph, numberOfNodes),
                         'degree': degreePivots(graph, numberOfNodes),
                         'pgRank': pgRankPivots(graph, numberOfNodes),
                         'pgRankRev': pgRankReversePivots(graph, numberOfNodes),
-                        'pgRankAlt': pgRankAlternatePivots(graph, numberOfNodes),
-                        'maxMin': maxMinPivots(graph, numberOfNodes, False, 0, 0),
-                        'maxSum': maxSumPivots(graph, numberOfNodes, False, 0, 0),
-                        'minSum': minSumPivots(graph, numberOfNodes, False, 0, 0),
-                        'mixed3': mixed3Pivots(graph, numberOfNodes)}
+                        'pgRankAlt': pgRankAlternatePivots(graph, numberOfNodes)}
+                        # 'maxMin': maxMinPivots(graph, numberOfNodes, False, 0, 0), # slow
+                        # 'maxSum': maxSumPivots(graph, numberOfNodes, False, 0, 0), # slow
+                        # 'minSum': minSumPivots(graph, numberOfNodes, False, 0, 0), # slow
+                        # 'mixed3': mixed3Pivots(graph, numberOfNodes), # slow
 
         # iterate through all pivot strategies
         for strategy in strategyNames:
@@ -451,7 +446,56 @@ if __name__ == "__main__":
     pivotValues.to_csv(pivotFileName, sep = ',',  index = False)
     realValues.to_csv(realFileName, sep = ',',  index = False)
 
-
-
     endGlobal = time.time()
-    print('time elapsed:',int(endGlobal - startGlobal),'sec')
+    print('Total time elapsed:',int(endGlobal - startGlobal),'sec')
+
+'''
+RUNTIMES
+
+~5.000 nodes
+Power-grid Graph calculations
+        Average closeness centrality 3.4199 sec
+        Average betweenness centrality 3.4962 sec
+        Pivots:
+                Random pivot selection: 0.0098 sec
+                Random degree pivot selection: 40.682 sec
+                Random page rank pivot selection: 23.0815 sec
+                Degree pivot selection: 0.0027 sec
+                Page rank pivot selection: 4.2352 sec
+                Page rank reverse pivot selection: 4.2566 sec
+                Page rank alternate pivot selection: 4.5548 sec
+
+10.000 nodes
+Erdos-Renyi Graph calculations
+        Average closeness centrality 28.0514 sec
+        Average betweenness centrality 36.1492 sec
+        Pivots:
+                Random pivot selection: 0.0439 sec
+                Random degree pivot selection: 150.1215 sec
+                Random page rank pivot selection: 74.9543 sec
+                Degree pivot selection: 0.007 sec
+                Page rank pivot selection: 2.1127 sec
+                Page rank reverse pivot selection: 2.111 sec
+                Page rank alternate pivot selection: 3.3904 sec
+
+Barabasi-Albert Graph calculations
+        Average closeness centrality 20.0752 sec
+        Average betweenness centrality 18.1115 sec
+        Pivots:
+                Random pivot selection: 0.0259 sec
+                Random degree pivot selection: 160.9023 sec
+                Random page rank pivot selection: 76.3554 sec
+                Degree pivot selection: 0.0051 sec
+                Page rank pivot selection: 5.2688 sec
+                Page rank reverse pivot selection: 5.1462 sec
+                Page rank alternate pivot selection: 6.4302 sec
+
+~2m nodes
+Online-Social-Network
+    Average closeness centrality ~33mins (1989.6231 sec)
+    Average betweenness centrality ~64mins (3879.0289 sec)
+    Pivots:
+        Random pivot selection: 0.623 sec
+
+
+'''

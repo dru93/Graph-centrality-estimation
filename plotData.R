@@ -10,7 +10,7 @@ pkgTest('ggplot2')
 pkgTest('extrafont')
 
 # messing around with fonts
-library('extrafont')
+# library('extrafont')
 library('ggplot2')
 
 # # uncomment block in first run to enable fancy fonts
@@ -24,18 +24,12 @@ library('ggplot2')
   # setwd('C:/Users/dru/Documents/[Dru]/Uni/SNACS/Centrality Paper/Graph-centrality-estimation-master')
 
 # input dataframes
-pivotValues = as.data.frame(read.csv('tables/pivotValues.csv'))
-realValues = as.data.frame(read.csv('tables/realValues.csv'))
+pivotValues = as.data.frame(read.csv('tables/pivotValues10000.csv'))
+realValues = as.data.frame(read.csv('tables/realValues10000.csv'))
 
 graphsList = as.character(realValues$graphType)
 
-# # omit pivot strategies
-  # pivotValues = subset(pivotValues, pivotStrategy != 'pgRank')
-  # pivotValues = subset(pivotValues, pivotStrategy != 'pgRankRev')
-  # pivotValues = subset(pivotValues, pivotStrategy != 'pgRankAlt')
-  # pivotValues = subset(pivotValues, pivotStrategy != 'degree')
-
-# # display data just for ease
+# # display data just because
   # View(pivotValues)
   # View(realValues)
 
@@ -46,7 +40,8 @@ graphsList = as.character(realValues$graphType)
 for (g in c(1:length(graphsList))){
   
   titleMessage = paste(c(graphsList[g], 'Graph'), collapse = ' ')
-  subtitleMessage = paste(c('Numbers of nodes:', realValues[g,5]), collapse = ' ')
+  subtitleMessage = paste(c('Numbers of nodes:', prettyNum(realValues[g,5], big.mark = ',')),
+                          collapse = '')
   
   # do twice, v = 1 closeness plot, v = 2 betweenness plot
   for (v in c(1:2)){
@@ -55,37 +50,40 @@ for (g in c(1:length(graphsList))){
       realValue = realValues[g,1]
       ylabVariable = 'closenessValue'
       ylabMessage = 'Closeness Value'
-      fileName = paste(c('images/', realValues[g,5], '-', graphsList[g],
-                       '-Closeness.png'), collapse = '')
+      fileName = paste(c('images/', realValues[g,5], '-', graphsList[g], '-Closeness.png'),
+                       collapse = '')
     }else{
       realValue = realValues[g,2]
       ylabVariable = 'betweennessValue'
       ylabMessage = 'Betweenness Value'
-      fileName = paste(c('images/', realValues[g,5], '-', graphsList[g],
-                        '-Betweenness.png'), collapse = '')
+      fileName = paste(c('images/', realValues[g,5], '-', graphsList[g], '-Betweenness.png'),
+                       collapse = '')
     }
     
     # actual plotting happens here  
     thePlot = ggplot(subset(pivotValues, graphType == graphsList[g]),
                      aes_string('numberOfPivots', ylabVariable, 
-                                color = 'pivotStrategy')
-    ) +
-    geom_line(size = 0.8) +
-    geom_hline(yintercept = realValue, color = 'black') +
-      
-    labs(title = titleMessage,
-           subtitle = subtitleMessage,
-           x = 'Number of pivots',
-           y = ylabMessage,
-           color = 'Pivot \nselection \nstrategies') +
-      
-    theme(plot.title = element_text(hjust = 0.5),
-            plot.subtitle = element_text(hjust = 0.5),
-            text = element_text(size=16, family='xkcd'),
-            legend.position = 'right')
+                                color = 'pivotStrategy'),
+                                log10 = 'y') +
+                    geom_line(size = 0.8) +
+                    geom_hline(yintercept = realValue, color = 'black') +
+                    # log scales
+                    scale_y_continuous(trans = 'log10') +
+                    scale_x_continuous(trans = 'log10', labels = scales::comma) +
+                  
+                    labs(title = titleMessage,
+                           subtitle = subtitleMessage,
+                           x = 'Number of pivots',
+                           y = ylabMessage,
+                           color = 'Pivot \nselection \nstrategies') +
+                      
+                    theme(plot.title = element_text(hjust = 0.5),
+                            plot.subtitle = element_text(hjust = 0.5),
+                            text = element_text(size = 16),#, family='xkcd'),
+                            legend.position = 'right')
     
-    # # print to terminal or whatever
-    # print(thePlot)
+    # print to terminal or whatever
+    print(thePlot)
 
     # save to working directory
     ggsave(fileName, plot = thePlot, scale = 1.5, width = 12, height = 8, units = 'cm')
@@ -94,7 +92,7 @@ for (g in c(1:length(graphsList))){
 
 # # print last plot
 # print(thePlot)
-# 
+# # 
 # # ########### Extract p-values ###########
   # # 
   # # list of strings with all pivot strategies names

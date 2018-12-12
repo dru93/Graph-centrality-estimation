@@ -17,14 +17,13 @@ Sassy experiments estimating **closeness** and **betweenness** centrality measur
 | `MaxMin`    | maximize minimum distance to previous pivots |
 | `MaxSum`    | maximize sum of distances to previous pivots |
 | `MinSum`    | minimize sum of distances to previous pivots |
-| `Mixed3`    | alternate `MaxMin`, `MaxSum`, and `MinSum`   |
+| `Mixed3`    | alternate `MaxSum`, `MinSum`, and `Random`   |
 
 ## Graphs
 
 | Graph                   | Number of nodes |
 |:-----------------------:|:---------------:|
-| `Erdős-Rényi`           | `10^5`          |
-| `Barabási–Albert`       | `10^5`          |
-| `Price network `        | `10^5`          |
-| `US power grid`         | `4941`          |
-| `Online social network` | `279630`        |
+| `Erdős-Rényi`           | `10.000`          |
+| `Barabási–Albert`       | `10.000`          |
+| `Price network `        | `10.000`          |
+| `US power grid`         | `4.941`          |

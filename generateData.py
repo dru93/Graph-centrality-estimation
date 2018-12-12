@@ -272,7 +272,7 @@ def minSumPivots(G, numberOfPivots, mixed, nodeList, prevPivot):
 
     return pivots
 
-# pivot selection by alternating maxmin, maxsum and minsum
+# pivot selection by alternating random, maxsum and minsum
 def mixed3Pivots(G, numberOfPivots):
 
     start = time.time()
@@ -301,20 +301,21 @@ def mixed3Pivots(G, numberOfPivots):
 
     return pivots
 
+
 # function to make all graphs we wanna test
 def makeGraphs(numberOfNodes):
 
     # list containing all graphs tested
     G = []
 
-    # # Erdos-Renyi random graph with n nodes
-    # g, pos = triangulation(np.random.random((numberOfNodes, 2)))
-    # ret = random_rewire(g, 'erdos')
-    # G.append(g)
+    # Erdos-Renyi random graph with n nodes
+    g, pos = triangulation(np.random.random((numberOfNodes, 2)))
+    ret = random_rewire(g, 'erdos')
+    G.append(g)
 
-    # # Barabasi-Albert graph
-    # g =  price_network(numberOfNodes, directed = False)
-    # G.append(g)
+    # Barabasi-Albert graph
+    g =  price_network(numberOfNodes, directed = False)
+    G.append(g)
 
     # US power grid graph
     g = collection.data['power']
@@ -342,7 +343,6 @@ if __name__ == "__main__":
     else:
         numberOfNodes = int(sys.argv[1])
 
-    print('started')
     start = time.time()
     G = makeGraphs(numberOfNodes)
     end = time.time()
@@ -350,7 +350,7 @@ if __name__ == "__main__":
 
     startGlobal = time.time()
 
-    graphsNames = ['Power-grid']#'Erdos-Renyi', 'Barabasi-Albert']#, 'Online-Social-Network']#
+    graphsNames = ['Erdos-Renyi', 'Barabasi-Albert', 'Power-grid']
 
     # lists with ALL values calculated
     pivotValues = []
@@ -367,7 +367,6 @@ if __name__ == "__main__":
         numberOfNodes = graph.num_vertices()
 
         # # draw graphs
-        # # if numberOfNodes <= 10^6:
         # start = time.time()
         # drawGraph(graph, graphsNames[g])
         # end = time.time()
@@ -489,13 +488,5 @@ Barabasi-Albert Graph calculations
                 Page rank pivot selection: 5.2688 sec
                 Page rank reverse pivot selection: 5.1462 sec
                 Page rank alternate pivot selection: 6.4302 sec
-
-~2m nodes
-Online-Social-Network
-    Average closeness centrality ~33mins (1989.6231 sec)
-    Average betweenness centrality ~64mins (3879.0289 sec)
-    Pivots:
-        Random pivot selection: 0.623 sec
-
 
 '''

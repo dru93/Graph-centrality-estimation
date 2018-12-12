@@ -7,31 +7,16 @@ pkgTest <- function(x){
 }
 
 pkgTest('ggplot2')
-pkgTest('extrafont')
-
-# messing around with fonts
-# library('extrafont')
 library('ggplot2')
 
-# # uncomment block in first run to enable fancy fonts
-  # xkcdFontURL = 'http://simonsoftware.se/other/xkcd.ttf'
-  # dest = '/usr/share/fonts/xkcd.ttf'
-  # download.file(xkcdFontURL, dest = 'xkcd.ttf', mode = 'wb')
-  # # takes a looong time ~10mins or smthing
-  # font_import()
-
 # # set to any directory you want, data must be there
-  # setwd('C:/Users/dru/Documents/[Dru]/Uni/SNACS/Centrality Paper/Graph-centrality-estimation-master')
+# setwd('C:/Users/dru/Documents/[Dru]/Uni/SNACS/Centrality Paper/Graph-centrality-estimation-master')
 
 # input dataframes
-pivotValues = as.data.frame(read.csv('tables/pivotValues10000.csv'))
-realValues = as.data.frame(read.csv('tables/realValues10000.csv'))
+pivotValues = as.data.frame(read.csv('tables/pivotValues.csv'))
+realValues = as.data.frame(read.csv('tables/realValues.csv'))
 
 graphsList = as.character(realValues$graphType)
-
-# # display data just because
-  # View(pivotValues)
-  # View(realValues)
 
 ########### Plot pivots ###########
 
@@ -82,65 +67,44 @@ for (g in c(1:length(graphsList))){
                             text = element_text(size = 16),#, family='xkcd'),
                             legend.position = 'right')
     
-    # print to terminal or whatever
-    print(thePlot)
+    # # print to terminal or whatever
+    # print(thePlot)
 
     # save to working directory
     ggsave(fileName, plot = thePlot, scale = 1.5, width = 12, height = 8, units = 'cm')
   }
 }
-
+ 
 # # print last plot
 # print(thePlot)
-# # 
-# # ########### Extract p-values ###########
-  # # 
-  # # list of strings with all pivot strategies names
-  # pivotList = unique(pivotValues$pivotStrategy)
-  # 
-  # maxNumberOfPivots = max(realValues[,5])
-  # 
-  # # 3d array to hold p-value of one sampled t-test
-  # # between pivot samples and actual value by graph, by pivot strategies and by number of pivots
-  # # x axis: graph type
-  # # y axis: pivot selection strategy
-  # # z axis: number of pivots sampled
-  # closenessPvalues = array(NA, dim = c(length(pivotList), length(graphsList), 20))#,
-  #                           # dimnames = list(pivotList, graphsList, c(30:50)))
-  # 
-  # betweennessPvalues = array(NA, dim = c(length(pivotList), length(graphsList), 20))#,
-  #                          # dimnames = list(pivotList, graphsList, c(30:50)))
-  # 
-  # # iterate through all graphs
-  # for (graph in c(1:length(graphsList))){
-  #   # iterate through all pivot strategies
-  #   for (strategy in c(1:length(pivotList))){
-  #     # iterate through number of pivots sampled
-  #     for (pivots in c(30:50)){
-  #       
-  #       # subset only relevant data
-  #       data = subset(pivotValues,
-  #                     pivotStrategy == pivotList[strategy] &
-  #                       graphType == graphsList[graph] &
-  #                       numberOfPivots <= pivots)
-  #       # calculate differences
-  #       closenessDiff = data$closenessValue - realValues[graph,1]
-  #       betweennessDiff = data$betweennessValue - realValues[graph,2]
-  #       
-  #       tTest = t.test(closenessDiff, mu = realValues[graph,1], conf.level = 0.99)
-  #       closenessPvalues[strategy, graph, pivots] = round(as.numeric(tTest[3]), 2)
-  #       
-  #       tTest = t.test(betweennessDiff, mu = realValues[graph,2], conf.level = 0.99)
-  #       betweennessPvalues[strategy, graph, pivots] = round(as.numeric(tTest[3]), 2)
-  #     }
-  #   }
-  # }
-  # 
-  # # # generic comment
-  # # strategyScores = matrix(NA, nrow = length(pivotList), ncol = 2,
-  # #                         dimnames = list(pivotList, c('closeness', 'betweenness')))
-  # 
-  # # for (strategy in c(1:length(pivotList))){
-  # #   strategyScores[strategy,1] = length(which(closenessPvalues[pivotList[strategy],,] > 0.05))
-  # #   strategyScores[strategy,2] = length(which(betweennessPvalues[pivotList[strategy],,] > 0.05))
-  # # }
+
+########### Extract differences ###########
+
+# list of strings with all pivot strategies names
+pivotList = unique(pivotValues$pivotStrategy)
+
+maxNumberOfPivots = max(realValues[,5])
+
+# x axis: graph type
+# y axis: pivot selection strategy
+closenessDiffAll = matrix(NA, nrow = length(pivotList), ncol =  length(graphsList),
+                          dimnames = list(pivotList, graphsList))
+
+betweennessDiffAll = matrix(NA, nrow = length(pivotList), ncol =  length(graphsList),
+                         dimnames = list(pivotList, graphsList))
+
+# iterate through all graphs
+for (graph in c(1:length(graphsList))){
+  # iterate through all pivot strategies
+  for (strategy in c(1:length(pivotList))){
+    data = subset(pivotValues,
+                  pivotStrategy == pivotList[strategy] &
+                    graphType == graphsList[graph])
+    
+    closenessDiff = abs(data$closenessValue - realValues[graph,1])
+    closenessDiffAll[strategy, graph] = round(mean(closenessDiff, na.rm = T)*10^4, 2)
+    
+    betweennessDiff = abs(data$betweennessValue - realValues[graph,2])
+    betweennessDiffAll[strategy, graph] = round(mean(betweennessDiff, na.rm = T)*10^4, 2)
+  }
+}
